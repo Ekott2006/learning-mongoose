@@ -1,10 +1,35 @@
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import { faker } from "@faker-js/faker";
+import User from "./models/user";
+import { connect, startSession } from "mongoose";
 
-// This will create an new instance of "MongoMemoryServer" and automatically start it
-const mongod = await MongoMemoryServer.create();
+await connect("mongodb://localhost:27017/learning-mongoose");
+await User.deleteMany();
 
-const uri = mongod.getUri();
-console.log(uri);
+const session = await startSession();
+console.log("Starting session: ", session.id);
 
-// The Server can be stopped again with
-await mongod.stop();
+const user = createUser();
+const user2 = createUser();
+console.log("Creating user: ", user.username);
+
+session.withTransaction(async () => {
+  await User.create([user], { session });
+  // await User.create([user2], { session });
+
+  throw new Error("Test error"); // This will cause the transaction to be aborted
+});
+
+// await session.endSession();
+
+console.log(await User.find({}));
+
+User.deleteMany();
+
+function createUser() {
+  return {
+    username: faker.internet.username(),
+    password: faker.internet.password(),
+    email: faker.internet.email(),
+    groups: [],
+  }
+}

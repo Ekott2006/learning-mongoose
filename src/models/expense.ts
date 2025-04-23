@@ -15,16 +15,8 @@ const schema = new Schema({
       paidAt: Date,
     },
   ],
-  recurrence: {
-    type: new Schema(
-      {
-        duration: { type: Number, required: true },
-        startDate: { type: Date, required: true },
-      },
-      { _id: false }
-    ),
-    required: false,
-  },
+  recurrenceDuration: { type: Number },
+  history: [{ type: Schema.Types.ObjectId, ref: "ExpenseHistory" }],
 });
 const Expense = model("Expense", schema);
 export type ExpenseSchema = InferSchemaType<typeof schema>;

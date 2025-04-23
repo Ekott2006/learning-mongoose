@@ -3,7 +3,6 @@ import { z } from "zod";
 import { ZodObjectId } from "../lib/utils";
 import Expense from "../models/expense";
 import Group from "../models/group";
-import ParticipantDetail from "../models/participant-detail";
 import Topic from "../models/topic";
 
 export const insertParticipantDetailSchema = z.object({
@@ -36,7 +35,13 @@ export async function createExpense(data: InsertExpense) {
     creator: data.creatorId,
     topic: data.topicId,
     group: data.groupId,
-    participants: [data.creatorId],
+     {
+          user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+          allocationType: { type: String, required: true },
+          amount: { type: Number, required: true },
+          paidAt: Date,
+        },
+    participants: [{user: data.creatorId,}],
     totalAmount: data.totalAmount,
     dueDate: data.dueDate,
     recurrence: data.recurrence
@@ -67,7 +72,7 @@ export async function upsertExpenseParticipants(
 
     _id: groupId,
     participants: { $all: userIds },
-    expenses: {$ }
+    // expenses: {$ }
   }).select('_id');
 
   if (!group) return false
